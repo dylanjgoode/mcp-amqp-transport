@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "mcp-amqp-stdio": "dist/stdio_amqp_adaptor.js"
+    "mcp-client-amqp-adaptor": "dist/mcp_client_amqp_adaptor.js",
+    "mcp-server-amqp-adaptor": "dist/mcp_server_amqp_adaptor.js"
   },
   "scripts": {
     "build": "tsc",
