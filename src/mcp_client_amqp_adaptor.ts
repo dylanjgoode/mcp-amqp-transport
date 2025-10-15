@@ -6,13 +6,13 @@ import process from 'node:process';
 import { JSONRPCMessageSchema } from '@modelcontextprotocol/sdk/types.js';
 
 export interface RemoteMCPConfiguration {
-    hostname: string;
+    serverName: string;
+    exchangeName: string;
+    hostname?: string;
     port?: number;
     username?: string;
     password?: string;
     useTLS?: boolean;
-    serverName: string;
-    exchangeName: string;
 }
 
 class ReadBuffer {
@@ -36,9 +36,9 @@ async function main() {
     const program = new Command();
     
     program
-        .requiredOption('--hostname <hostname>', 'AMQP broker hostname')
         .requiredOption('--serverName <serverName>', 'MCP server name')
         .requiredOption('--exchangeName <exchangeName>', 'AMQP exchange name')
+        .option('--hostname <hostname>', 'AMQP broker hostname')
         .option('--port <port>', 'AMQP broker port', parseInt)
         .option('--username <username>', 'AMQP username')
         .option('--password <password>', 'AMQP password')
@@ -47,10 +47,19 @@ async function main() {
     
     const config: RemoteMCPConfiguration = program.opts();
     
-    const protocol = config.useTLS ? 'amqps' : 'amqp';
-    const port = config.port || (config.useTLS ? 5671 : 5672);
-    const auth = config.username ? `${config.username}:${config.password}@` : '';
-    const url = `${protocol}://${auth}${config.hostname}:${port}`;
+    const hostname = config.hostname || process.env.AMQP_HOSTNAME;
+    const useTLS = config.useTLS ?? (process.env.AMQP_USE_TLS === 'true');
+    const port = config.port || parseInt(process.env.AMQP_PORT || '') || (useTLS ? 5671 : 5672);
+    const username = config.username || process.env.AMQP_USERNAME;
+    const password = config.password || process.env.AMQP_PASSWORD;
+    
+    if (!hostname) throw new Error('hostname must be provided via --hostname or AMQP_HOSTNAME environment variable');
+    if (!username) throw new Error('username must be provided via --username or AMQP_USERNAME environment variable');
+    if (!password) throw new Error('password must be provided via --password or AMQP_PASSWORD environment variable');
+    
+    const protocol = useTLS ? 'amqps' : 'amqp';
+    const auth = `${username}:${password}@`;
+    const url = `${protocol}://${auth}${hostname}:${port}`;
     const clientId = `client-${randomUUID()}`;
     const replyRoutingKey = `from-mcp.${config.serverName}.client-id.${clientId}`;
     

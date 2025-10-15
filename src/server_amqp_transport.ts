@@ -3,13 +3,13 @@ import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
 
 export interface ServerAMQPTransportOptions {
-    hostname: string;
+    name: string;
+    exchangeName: string;
+    hostname?: string;
     port?: number;
     username?: string;
     password?: string;
     useTLS?: boolean;
-    name: string;
-    exchangeName: string;
 }
 
 export class ServerAMQPTransport implements Transport {
@@ -26,10 +26,19 @@ export class ServerAMQPTransport implements Transport {
     onmessage?: (message: JSONRPCMessage) => void;
 
     constructor(options: ServerAMQPTransportOptions) {
-        const protocol = options.useTLS ? 'amqps' : 'amqp';
-        const port = options.port || (options.useTLS ? 5671 : 5672);
-        const auth = options.username ? `${options.username}:${options.password}@` : '';
-        this.url = `${protocol}://${auth}${options.hostname}:${port}`;
+        const hostname = options.hostname || process.env.AMQP_HOSTNAME;
+        const useTLS = options.useTLS ?? (process.env.AMQP_USE_TLS === 'true');
+        const port = options.port || parseInt(process.env.AMQP_PORT || '') || (useTLS ? 5671 : 5672);
+        const username = options.username || process.env.AMQP_USERNAME;
+        const password = options.password || process.env.AMQP_PASSWORD;
+        
+        if (!hostname) throw new Error('hostname must be provided via options or AMQP_HOSTNAME environment variable');
+        if (!username) throw new Error('username must be provided via options or AMQP_USERNAME environment variable');
+        if (!password) throw new Error('password must be provided via options or AMQP_PASSWORD environment variable');
+        
+        const protocol = useTLS ? 'amqps' : 'amqp';
+        const auth = `${username}:${password}@`;
+        this.url = `${protocol}://${auth}${hostname}:${port}`;
         this.name = options.name;
         this.exchangeName = options.exchangeName;
     }
