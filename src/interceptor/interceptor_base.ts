@@ -7,13 +7,13 @@ export enum MessageProcessStatus {
 }
 
 export interface InterceptorOptions {
-    hostname: string;
+    inExchange: string;
+    outExchange: string;
+    hostname?: string;
     port?: number;
     username?: string;
     password?: string;
     useTLS?: boolean;
-    inExchange: string;
-    outExchange: string;
 }
 
 
@@ -23,7 +23,24 @@ export abstract class InterceptorBase {
     private options: InterceptorOptions;
     
     constructor(interceptorOptions: InterceptorOptions) {
-        this.options = interceptorOptions;
+        const hostname = interceptorOptions.hostname || process.env.AMQP_HOSTNAME;
+        const useTLS = interceptorOptions.useTLS ?? (process.env.AMQP_USE_TLS === 'true');
+        const port = interceptorOptions.port || parseInt(process.env.AMQP_PORT || '') || (useTLS ? 5671 : 5672);
+        const username = interceptorOptions.username || process.env.AMQP_USERNAME;
+        const password = interceptorOptions.password || process.env.AMQP_PASSWORD;
+        
+        if (!hostname) throw new Error('hostname must be provided via options or AMQP_HOSTNAME environment variable');
+        if (!username) throw new Error('username must be provided via options or AMQP_USERNAME environment variable');
+        if (!password) throw new Error('password must be provided via options or AMQP_PASSWORD environment variable');
+        
+        this.options = {
+            ...interceptorOptions,
+            hostname,
+            port,
+            username,
+            password,
+            useTLS
+        };
     }
 
     abstract proccessClientToMCPMessage(message: any): Promise<MessageProcessStatus>;
