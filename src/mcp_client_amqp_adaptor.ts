@@ -76,7 +76,7 @@ async function main() {
         if (!msg) return;
         const message = JSON.parse(msg.content.toString());
         const unnormalizedMessage = 'id' in message && typeof message.id === 'string'
-            ? { ...message, id: message.id.replace(`${clientId}-`, '') }
+            ? { ...message, id: Number(message.id.split('-').pop()) } // Strands and Q CLI requires id to be of type Number
             : message;
         process.stdout.write(JSON.stringify(unnormalizedMessage) + '\n');
         channel.ack(msg);
