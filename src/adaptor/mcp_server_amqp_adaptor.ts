@@ -70,7 +70,7 @@ async function main() {
     
     await channel.assertExchange(config.exchangeName, 'topic', { durable: true });
     
-    const subprocess = spawn(config.command, config.args || [], { stdio: ['pipe', 'pipe', 'inherit'] });
+    const subprocess = spawn(config.command, config.args || [], { stdio: ['pipe', 'pipe', 'inherit'], env: process.env });
     const replyRoutingKeys = new Map<string | number, string>();
     
     const requestQueueName = `mcp-${config.serverName}-request`;
