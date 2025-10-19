@@ -1,6 +1,6 @@
 # MCP AMQP Transport
 
-AMQP transport implementation for the Model Context Protocol (MCP), enabling MCP servers and clients to communicate over AMQP message brokers like RabbitMQ and Amazon MQ.
+AMQP transport implementation for the Model Context Protocol (MCP), enabling MCP servers and clients to communicate over AMQP message brokers like RabbitMQ.
 
 ## Features
 
