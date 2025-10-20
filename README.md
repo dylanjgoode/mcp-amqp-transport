@@ -7,7 +7,7 @@ AMQP transport implementation for the Model Context Protocol (MCP), enabling MCP
 - **AMQP Transport Layer**: Full implementation of MCP transport over AMQP 0-9-1 protocol
 - **Client & Server Support**: Both `ClientAMQPTransport` and `ServerAMQPTransport` classes
 - **CLI Adaptors**: Command-line tools to bridge stdio-based MCP servers/clients with AMQP
-- **Interceptor Framework**: Base class for building message interceptors (monitoring, security, caching, etc.)
+- **Interceptor Framework**: Base class for building message interceptors
 - **Flexible Configuration**: Support for environment variables and direct configuration
 - **TLS Support**: Secure connections with AMQPS
 
