@@ -15,9 +15,16 @@
     "test:coverage": "jest --coverage",
     "prepublishOnly": "npm run build"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": ["mcp", "amqp", "transport", "model-context-protocol"],
   "author": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amazon-mq/mcp-amqp-transport"
+  },
   "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.19.0"
   },
