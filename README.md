@@ -32,13 +32,11 @@ const server = new Server(
   { capabilities: {} }
 );
 
+// Configuration via environment variables
 const transport = new ServerAMQPTransport({
   name: 'my-server',
-  exchangeName: 'mcp-exchange',
-  hostname: 'localhost',
-  port: 5672,
-  username: 'guest',
-  password: 'guest'
+  exchangeName: 'mcp-exchange'
+  // hostname, port, username, password read from environment variables
 });
 
 await server.connect(transport);
@@ -55,13 +53,11 @@ const client = new Client(
   { capabilities: {} }
 );
 
+// Configuration via environment variables
 const transport = new ClientAMQPTransport({
   serverName: 'my-server',
-  exchangeName: 'mcp-exchange',
-  hostname: 'localhost',
-  port: 5672,
-  username: 'guest',
-  password: 'guest'
+  exchangeName: 'mcp-exchange'
+  // hostname, port, username, password read from environment variables
 });
 
 await client.connect(transport);
@@ -76,14 +72,16 @@ The package includes two CLI tools for bridging stdio-based MCP implementations 
 Wraps an existing stdio-based MCP server to communicate over AMQP:
 
 ```bash
+# Set environment variables
+export AMQP_HOSTNAME=localhost
+export AMQP_USERNAME=guest
+export AMQP_PASSWORD=guest
+
 mcp-server-amqp-adaptor \
   --serverName my-server \
   --exchangeName mcp-exchange \
   --command "npx" \
-  --args "-y" "@modelcontextprotocol/server-everything" \
-  --hostname localhost \
-  --username guest \
-  --password guest
+  --args "-y" "@modelcontextprotocol/server-everything"
 ```
 
 #### Client Adaptor
@@ -91,12 +89,14 @@ mcp-server-amqp-adaptor \
 Provides a stdio interface for MCP clients to connect to AMQP-based servers:
 
 ```bash
+# Set environment variables
+export AMQP_HOSTNAME=localhost
+export AMQP_USERNAME=guest
+export AMQP_PASSWORD=guest
+
 mcp-client-amqp-adaptor \
   --serverName my-server \
-  --exchangeName mcp-exchange \
-  --hostname localhost \
-  --username guest \
-  --password guest
+  --exchangeName mcp-exchange
 ```
 
 ### Building Interceptors
@@ -120,12 +120,11 @@ class MonitoringInterceptor extends InterceptorBase {
   }
 }
 
+// Configuration via environment variables
 const interceptor = new MonitoringInterceptor({
   inExchange: 'mcp-exchange-in',
-  outExchange: 'mcp-exchange-out',
-  hostname: 'localhost',
-  username: 'guest',
-  password: 'guest'
+  outExchange: 'mcp-exchange-out'
+  // hostname, username, password read from environment variables
 });
 
 await interceptor.start();
@@ -219,10 +218,6 @@ enum MessageProcessStatus {
   ERROR = 'error'                           // Error occurred
 }
 ```
-
-## Examples
-
-See the [examples directory](examples/) for complete working examples.
 
 ## Security
 
