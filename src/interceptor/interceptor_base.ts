@@ -48,9 +48,7 @@ export abstract class InterceptorBase {
     abstract proccessMCPToClientMessage(message: any): Promise<MessageProcessStatus>;
 
 
-    async start(): Promise<void> {
-        console.log('Starting interceptor v3');
-        
+    async start(): Promise<void> {        
         const protocol = this.options.useTLS ? 'amqps' : 'amqp';
         const port = this.options.port || (this.options.useTLS ? 5671 : 5672);
         const auth = this.options.username ? `${this.options.username}:${this.options.password}@` : '';

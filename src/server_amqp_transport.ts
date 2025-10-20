@@ -44,7 +44,6 @@ export class ServerAMQPTransport implements Transport {
     }
 
     async start(): Promise<void> {
-        console.log("using v4 server tranport");
         if (this.started) {
             throw new Error('ServerAMQPTransport already started');
         }

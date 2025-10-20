@@ -49,7 +49,6 @@ export class ClientAMQPTransport implements Transport {
     }
 
     async start(): Promise<void> {
-        console.log("using v4 client tranport");
         if (this.started) {
             throw new Error('ClientAMQPTransport already started');
         }
