@@ -1,9 +1,10 @@
 import amqplib from 'amqplib';
 
 export enum MessageProcessStatus {
-    SUCCEEDED_FORWARD = 'succeeded_forward',
-    SUCCEEDED_REJECT = 'succeeded_reject',
-    ERROR = 'error'
+    FORWARD = 'forward',
+    REJECT = 'reject',
+    ERROR = 'error',
+    DROP = 'drop'
 }
 
 export interface InterceptorOptions {
@@ -72,12 +73,12 @@ export abstract class InterceptorBase {
                 
                 const status = await this.proccessClientToMCPMessage(message);
                 
-                if (status === MessageProcessStatus.SUCCEEDED_FORWARD) {
+                if (status === MessageProcessStatus.FORWARD) {
                     this.channel.publish(this.options.outExchange, msg.fields.routingKey, msg.content, {
                         persistent: true,
                         headers: msg.properties.headers
                     });
-                } else if (status === MessageProcessStatus.SUCCEEDED_REJECT) {
+                } else if (status === MessageProcessStatus.REJECT) {
                     if (routingKeyToReply) {
                         const errorMessage = { error: 'rejected' };
                         this.channel.publish(this.options.outExchange, routingKeyToReply, 
@@ -89,6 +90,8 @@ export abstract class InterceptorBase {
                         persistent: true,
                         headers: msg.properties.headers
                     });
+                } else if (status === MessageProcessStatus.DROP) {
+                    // Message is dropped, do nothing
                 }
                 
                 this.channel.ack(msg);
@@ -110,12 +113,12 @@ export abstract class InterceptorBase {
                 
                 const status = await this.proccessMCPToClientMessage(message);
                 
-                if (status === MessageProcessStatus.SUCCEEDED_FORWARD) {
+                if (status === MessageProcessStatus.FORWARD) {
                     this.channel.publish(this.options.inExchange, msg.fields.routingKey, msg.content, {
                         persistent: true,
                         headers: msg.properties.headers
                     });
-                } else if (status === MessageProcessStatus.SUCCEEDED_REJECT) {
+                } else if (status === MessageProcessStatus.REJECT) {
                     if (routingKeyToReply) {
                         const errorMessage = { error: 'rejected' };
                         this.channel.publish(this.options.inExchange, routingKeyToReply, 
@@ -127,6 +130,8 @@ export abstract class InterceptorBase {
                         persistent: true,
                         headers: msg.properties.headers
                     });
+                } else if (status === MessageProcessStatus.DROP) {
+                    // Message is dropped, do nothing
                 }
                 
                 this.channel.ack(msg);
