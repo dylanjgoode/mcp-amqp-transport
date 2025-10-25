@@ -13,6 +13,7 @@ export interface RemoteMCPConfiguration {
     username?: string;
     password?: string;
     useTLS?: boolean;
+    additionalMetadata?: string;
 }
 
 class ReadBuffer {
@@ -43,9 +44,19 @@ async function main() {
         .option('--username <username>', 'AMQP username')
         .option('--password <password>', 'AMQP password')
         .option('--useTLS', 'Use TLS connection')
+        .option('--additional-metadata <metadata>', 'Additional metadata as key=value pairs separated by commas')
         .parse();
     
     const config: RemoteMCPConfiguration = program.opts();
+    const additionalMetadata = config.additionalMetadata;
+    
+    const metadata: Record<string, string> = {};
+    if (additionalMetadata) {
+        additionalMetadata.split(',').forEach(pair => {
+            const [key, value] = pair.split('=');
+            if (key && value) metadata[key.trim()] = value.trim();
+        });
+    }
     
     const hostname = config.hostname || process.env.AMQP_HOSTNAME;
     const useTLS = config.useTLS ?? (process.env.AMQP_USE_TLS === 'true');
@@ -98,7 +109,7 @@ async function main() {
             
             channel.publish(config.exchangeName, routingKey, content, {
                 persistent: true,
-                headers: { routingKeyToReply: replyRoutingKey }
+                headers: { routingKeyToReply: replyRoutingKey, ...metadata }
             });
         }
     });

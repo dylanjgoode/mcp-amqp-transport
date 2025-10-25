@@ -4,6 +4,7 @@ import amqplib from 'amqplib';
 import process from 'node:process';
 import { spawn } from 'node:child_process';
 import { JSONRPCMessageSchema } from '@modelcontextprotocol/sdk/types.js';
+import { randomUUID } from 'crypto';
 
 export interface RemoteMCPConfiguration {
     serverName: string;
@@ -15,6 +16,7 @@ export interface RemoteMCPConfiguration {
     password?: string;
     useTLS?: boolean;
     args?: string[];
+    additionalMetadata?: string;
 }
 
 class ReadBuffer {
@@ -47,9 +49,19 @@ async function main() {
         .option('--password <password>', 'AMQP password')
         .option('--useTLS', 'Use TLS connection')
         .option('--args <args...>', 'Arguments for the command')
+        .option('--additional-metadata <metadata>', 'Additional metadata as key=value pairs separated by commas')
         .parse();
     
     const config: RemoteMCPConfiguration = program.opts();
+    const additionalMetadata = config.additionalMetadata;
+    
+    const metadata: Record<string, string> = {};
+    if (additionalMetadata) {
+        additionalMetadata.split(',').forEach(pair => {
+            const [key, value] = pair.split('=');
+            if (key && value) metadata[key.trim()] = value.trim();
+        });
+    }
     
     const hostname = config.hostname || process.env.AMQP_HOSTNAME;
     const useTLS = config.useTLS ?? (process.env.AMQP_USE_TLS === 'true');
@@ -64,6 +76,8 @@ async function main() {
     const protocol = useTLS ? 'amqps' : 'amqp';
     const auth = `${username}:${password}@`;
     const url = `${protocol}://${auth}${hostname}:${port}`;
+    
+    const serverId = `server-${config.serverName}-${randomUUID()}`;
     
     const connection = await amqplib.connect(url);
     const channel = await connection.createChannel();
@@ -106,7 +120,8 @@ async function main() {
             }
             
             channel.publish(config.exchangeName, routingKey, content, {
-                persistent: true
+                persistent: true,
+                headers: { serverName: config.serverName, serverId, ...metadata }
             });
         }
     });

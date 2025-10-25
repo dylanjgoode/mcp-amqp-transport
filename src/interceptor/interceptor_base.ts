@@ -44,9 +44,9 @@ export abstract class InterceptorBase {
         };
     }
 
-    abstract proccessClientToMCPMessage(message: any): Promise<MessageProcessStatus>;
+    abstract proccessClientToMCPMessage(message: any, headers?: any): Promise<MessageProcessStatus>;
 
-    abstract proccessMCPToClientMessage(message: any): Promise<MessageProcessStatus>;
+    abstract proccessMCPToClientMessage(message: any, headers?: any): Promise<MessageProcessStatus>;
 
 
     async start(): Promise<void> {        
@@ -71,7 +71,7 @@ export abstract class InterceptorBase {
                 const message = JSON.parse(msg.content.toString());
                 const routingKeyToReply = msg.properties.headers?.routingKeyToReply;
                 
-                const status = await this.proccessClientToMCPMessage(message);
+                const status = await this.proccessClientToMCPMessage(message, msg.properties.headers);
                 
                 if (status === MessageProcessStatus.FORWARD) {
                     this.channel.publish(this.options.outExchange, msg.fields.routingKey, msg.content, {
@@ -111,7 +111,7 @@ export abstract class InterceptorBase {
                 const message = JSON.parse(msg.content.toString());
                 const routingKeyToReply = msg.properties.headers?.routingKeyToReply;
                 
-                const status = await this.proccessMCPToClientMessage(message);
+                const status = await this.proccessMCPToClientMessage(message, msg.properties.headers);
                 
                 if (status === MessageProcessStatus.FORWARD) {
                     this.channel.publish(this.options.inExchange, msg.fields.routingKey, msg.content, {
