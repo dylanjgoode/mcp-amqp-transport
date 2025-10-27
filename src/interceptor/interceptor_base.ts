@@ -4,7 +4,8 @@ export enum MessageProcessStatus {
     FORWARD = 'forward',
     REJECT = 'reject',
     ERROR = 'error',
-    DROP = 'drop'
+    DROP = 'drop',
+    TRANSFORM = 'transform'
 }
 
 export interface InterceptorOptions {
@@ -44,9 +45,9 @@ export abstract class InterceptorBase {
         };
     }
 
-    abstract proccessClientToMCPMessage(message: any, headers?: any): Promise<MessageProcessStatus>;
+    abstract proccessClientToMCPMessage(message: any, headers?: any): Promise<[MessageProcessStatus, any?]>;
 
-    abstract proccessMCPToClientMessage(message: any, headers?: any): Promise<MessageProcessStatus>;
+    abstract proccessMCPToClientMessage(message: any, headers?: any): Promise<[MessageProcessStatus, any?]>;
 
 
     async start(): Promise<void> {        
@@ -71,18 +72,25 @@ export abstract class InterceptorBase {
                 const message = JSON.parse(msg.content.toString());
                 const routingKeyToReply = msg.properties.headers?.routingKeyToReply;
                 
-                const status = await this.proccessClientToMCPMessage(message, msg.properties.headers);
+                const [status, returnedMessage] = await this.proccessClientToMCPMessage(message, msg.properties.headers);
                 
                 if (status === MessageProcessStatus.FORWARD) {
                     this.channel.publish(this.options.outExchange, msg.fields.routingKey, msg.content, {
                         persistent: true,
                         headers: msg.properties.headers
                     });
+                } else if (status === MessageProcessStatus.TRANSFORM) {
+                    if (returnedMessage) {
+                        this.channel.publish(this.options.outExchange, msg.fields.routingKey, 
+                            Buffer.from(JSON.stringify(returnedMessage)), {
+                            persistent: true,
+                            headers: msg.properties.headers
+                        });
+                    }
                 } else if (status === MessageProcessStatus.REJECT) {
-                    if (routingKeyToReply) {
-                        const errorMessage = { error: 'rejected' };
-                        this.channel.publish(this.options.outExchange, routingKeyToReply, 
-                            Buffer.from(JSON.stringify(errorMessage)), { persistent: true });
+                    if (routingKeyToReply && returnedMessage) {
+                        this.channel.publish(this.options.inExchange, routingKeyToReply, 
+                            Buffer.from(JSON.stringify(returnedMessage)), { persistent: true });
                     }
                 } else if (status === MessageProcessStatus.ERROR) {
                     console.error('Error processing message, forwarding anyway');
@@ -111,18 +119,25 @@ export abstract class InterceptorBase {
                 const message = JSON.parse(msg.content.toString());
                 const routingKeyToReply = msg.properties.headers?.routingKeyToReply;
                 
-                const status = await this.proccessMCPToClientMessage(message, msg.properties.headers);
+                const [status, returnedMessage] = await this.proccessMCPToClientMessage(message, msg.properties.headers);
                 
                 if (status === MessageProcessStatus.FORWARD) {
                     this.channel.publish(this.options.inExchange, msg.fields.routingKey, msg.content, {
                         persistent: true,
                         headers: msg.properties.headers
                     });
+                } else if (status === MessageProcessStatus.TRANSFORM) {
+                    if (returnedMessage) {
+                        this.channel.publish(this.options.inExchange, msg.fields.routingKey, 
+                            Buffer.from(JSON.stringify(returnedMessage)), {
+                            persistent: true,
+                            headers: msg.properties.headers
+                        });
+                    }
                 } else if (status === MessageProcessStatus.REJECT) {
-                    if (routingKeyToReply) {
-                        const errorMessage = { error: 'rejected' };
+                    if (routingKeyToReply && returnedMessage) {
                         this.channel.publish(this.options.inExchange, routingKeyToReply, 
-                            Buffer.from(JSON.stringify(errorMessage)), { persistent: true });
+                            Buffer.from(JSON.stringify(returnedMessage)), { persistent: true });
                     }
                 } else if (status === MessageProcessStatus.ERROR) {
                     console.error('Error processing message, forwarding anyway');
