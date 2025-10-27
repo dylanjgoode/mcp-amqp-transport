@@ -81,7 +81,8 @@ mcp-server-amqp-adaptor \
   --serverName my-server \
   --exchangeName mcp-exchange \
   --command "npx" \
-  --args "-y" "@modelcontextprotocol/server-everything"
+  --args "-y" "@modelcontextprotocol/server-everything" \
+  --additional-metadata "region=us-east-1,env=prod"
 ```
 
 #### Client Adaptor
@@ -96,7 +97,8 @@ export AMQP_PASSWORD=guest
 
 mcp-client-amqp-adaptor \
   --serverName my-server \
-  --exchangeName mcp-exchange
+  --exchangeName mcp-exchange \
+  --additional-metadata "clientType=web,version=1.0"
 ```
 
 ### Building Interceptors
@@ -144,6 +146,12 @@ All transport classes and CLI tools support configuration via:
 - `AMQP_USERNAME`: AMQP username
 - `AMQP_PASSWORD`: AMQP password
 - `AMQP_USE_TLS`: Use TLS connection ("true" or "false")
+
+### CLI Options
+
+Both adaptors support the following additional options:
+
+- `--additional-metadata`: Custom metadata as key=value pairs (comma-separated) to include in message headers
 
 ## Architecture
 
