@@ -1,12 +1,12 @@
 import { InterceptorBase, MessageProcessStatus } from '../src/interceptor/interceptor_base';
 
 class TestInterceptor extends InterceptorBase {
-  async proccessClientToMCPMessage(message: any): Promise<MessageProcessStatus> {
-    return MessageProcessStatus.SUCCEEDED_FORWARD;
+  async proccessClientToMCPMessage(message: any, headers?: any): Promise<[MessageProcessStatus, any?]> {
+    return [MessageProcessStatus.FORWARD];
   }
 
-  async proccessMCPToClientMessage(message: any): Promise<MessageProcessStatus> {
-    return MessageProcessStatus.SUCCEEDED_FORWARD;
+  async proccessMCPToClientMessage(message: any, headers?: any): Promise<[MessageProcessStatus, any?]> {
+    return [MessageProcessStatus.FORWARD];
   }
 }
 
@@ -83,30 +83,38 @@ describe('InterceptorBase', () => {
   });
 
   describe('MessageProcessStatus', () => {
-    it('should have SUCCEEDED_FORWARD status', () => {
-      expect(MessageProcessStatus.SUCCEEDED_FORWARD).toBe('succeeded_forward');
+    it('should have FORWARD status', () => {
+      expect(MessageProcessStatus.FORWARD).toBe('forward');
     });
 
-    it('should have SUCCEEDED_REJECT status', () => {
-      expect(MessageProcessStatus.SUCCEEDED_REJECT).toBe('succeeded_reject');
+    it('should have REJECT status', () => {
+      expect(MessageProcessStatus.REJECT).toBe('reject');
     });
 
     it('should have ERROR status', () => {
       expect(MessageProcessStatus.ERROR).toBe('error');
+    });
+
+    it('should have DROP status', () => {
+      expect(MessageProcessStatus.DROP).toBe('drop');
+    });
+
+    it('should have TRANSFORM status', () => {
+      expect(MessageProcessStatus.TRANSFORM).toBe('transform');
     });
   });
 
   describe('abstract methods', () => {
     it('should require implementation of proccessClientToMCPMessage', async () => {
       const interceptor = new TestInterceptor(mockOptions);
-      const result = await interceptor.proccessClientToMCPMessage({});
-      expect(result).toBe(MessageProcessStatus.SUCCEEDED_FORWARD);
+      const [status] = await interceptor.proccessClientToMCPMessage({});
+      expect(status).toBe(MessageProcessStatus.FORWARD);
     });
 
     it('should require implementation of proccessMCPToClientMessage', async () => {
       const interceptor = new TestInterceptor(mockOptions);
-      const result = await interceptor.proccessMCPToClientMessage({});
-      expect(result).toBe(MessageProcessStatus.SUCCEEDED_FORWARD);
+      const [status] = await interceptor.proccessMCPToClientMessage({});
+      expect(status).toBe(MessageProcessStatus.FORWARD);
     });
   });
 });
