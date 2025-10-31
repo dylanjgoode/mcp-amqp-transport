@@ -17,7 +17,7 @@ describe('InterceptorBase', () => {
     hostname: 'localhost',
     port: 5672,
     username: 'guest',
-    password: 'guest'
+    password: 'guest',
   };
 
   describe('constructor', () => {
@@ -33,7 +33,7 @@ describe('InterceptorBase', () => {
 
       const interceptor = new TestInterceptor({
         inExchange: 'test-in',
-        outExchange: 'test-out'
+        outExchange: 'test-out',
       });
 
       expect(interceptor).toBeDefined();
@@ -47,7 +47,7 @@ describe('InterceptorBase', () => {
       expect(() => {
         new TestInterceptor({
           inExchange: 'test-in',
-          outExchange: 'test-out'
+          outExchange: 'test-out',
         });
       }).toThrow('hostname must be provided');
     });
@@ -57,7 +57,7 @@ describe('InterceptorBase', () => {
         new TestInterceptor({
           inExchange: 'test-in',
           outExchange: 'test-out',
-          hostname: 'localhost'
+          hostname: 'localhost',
         });
       }).toThrow('username must be provided');
     });
@@ -68,7 +68,7 @@ describe('InterceptorBase', () => {
           inExchange: 'test-in',
           outExchange: 'test-out',
           hostname: 'localhost',
-          username: 'guest'
+          username: 'guest',
         });
       }).toThrow('password must be provided');
     });
@@ -76,7 +76,7 @@ describe('InterceptorBase', () => {
     it('should support TLS configuration', () => {
       const interceptor = new TestInterceptor({
         ...mockOptions,
-        useTLS: true
+        useTLS: true,
       });
       expect(interceptor).toBeDefined();
     });

@@ -8,7 +8,7 @@ describe('ServerAMQPTransport', () => {
     hostname: 'localhost',
     port: 5672,
     username: 'guest',
-    password: 'guest'
+    password: 'guest',
   };
 
   describe('constructor', () => {
@@ -24,7 +24,7 @@ describe('ServerAMQPTransport', () => {
 
       const transport = new ServerAMQPTransport({
         name: 'test',
-        exchangeName: 'test'
+        exchangeName: 'test',
       });
 
       expect(transport).toBeDefined();
@@ -38,7 +38,7 @@ describe('ServerAMQPTransport', () => {
       expect(() => {
         new ServerAMQPTransport({
           name: 'test',
-          exchangeName: 'test'
+          exchangeName: 'test',
         });
       }).toThrow('hostname must be provided');
     });
@@ -48,7 +48,7 @@ describe('ServerAMQPTransport', () => {
         new ServerAMQPTransport({
           name: 'test',
           exchangeName: 'test',
-          hostname: 'localhost'
+          hostname: 'localhost',
         });
       }).toThrow('username must be provided');
     });
@@ -59,7 +59,7 @@ describe('ServerAMQPTransport', () => {
           name: 'test',
           exchangeName: 'test',
           hostname: 'localhost',
-          username: 'guest'
+          username: 'guest',
         });
       }).toThrow('password must be provided');
     });
@@ -67,7 +67,7 @@ describe('ServerAMQPTransport', () => {
     it('should support TLS configuration', () => {
       const transport = new ServerAMQPTransport({
         ...mockOptions,
-        useTLS: true
+        useTLS: true,
       });
       expect(transport).toBeDefined();
     });
@@ -79,7 +79,7 @@ describe('ServerAMQPTransport', () => {
       const message: JSONRPCMessage = {
         jsonrpc: '2.0',
         id: 1,
-        method: 'test'
+        method: 'test',
       };
 
       await expect(transport.send(message)).rejects.toThrow('Transport not started');

@@ -8,7 +8,7 @@ describe('ClientAMQPTransport', () => {
     hostname: 'localhost',
     port: 5672,
     username: 'guest',
-    password: 'guest'
+    password: 'guest',
   };
 
   describe('constructor', () => {
@@ -24,7 +24,7 @@ describe('ClientAMQPTransport', () => {
 
       const transport = new ClientAMQPTransport({
         serverName: 'test',
-        exchangeName: 'test'
+        exchangeName: 'test',
       });
 
       expect(transport).toBeDefined();
@@ -38,7 +38,7 @@ describe('ClientAMQPTransport', () => {
       expect(() => {
         new ClientAMQPTransport({
           serverName: 'test',
-          exchangeName: 'test'
+          exchangeName: 'test',
         });
       }).toThrow('hostname must be provided');
     });
@@ -48,7 +48,7 @@ describe('ClientAMQPTransport', () => {
         new ClientAMQPTransport({
           serverName: 'test',
           exchangeName: 'test',
-          hostname: 'localhost'
+          hostname: 'localhost',
         });
       }).toThrow('username must be provided');
     });
@@ -59,7 +59,7 @@ describe('ClientAMQPTransport', () => {
           serverName: 'test',
           exchangeName: 'test',
           hostname: 'localhost',
-          username: 'guest'
+          username: 'guest',
         });
       }).toThrow('password must be provided');
     });
@@ -67,7 +67,7 @@ describe('ClientAMQPTransport', () => {
     it('should support TLS configuration', () => {
       const transport = new ClientAMQPTransport({
         ...mockOptions,
-        useTLS: true
+        useTLS: true,
       });
       expect(transport).toBeDefined();
     });
@@ -78,7 +78,7 @@ describe('ClientAMQPTransport', () => {
         exchangeName: 'test',
         hostname: 'localhost',
         username: 'guest',
-        password: 'guest'
+        password: 'guest',
       });
       expect(transport).toBeDefined();
     });
@@ -90,7 +90,7 @@ describe('ClientAMQPTransport', () => {
         hostname: 'localhost',
         username: 'guest',
         password: 'guest',
-        useTLS: true
+        useTLS: true,
       });
       expect(transport).toBeDefined();
     });
@@ -102,7 +102,7 @@ describe('ClientAMQPTransport', () => {
       const message: JSONRPCMessage = {
         jsonrpc: '2.0',
         id: 1,
-        method: 'test'
+        method: 'test',
       };
 
       await expect(transport.send(message)).rejects.toThrow('Transport not started');
