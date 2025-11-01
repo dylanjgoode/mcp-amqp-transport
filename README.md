@@ -14,7 +14,7 @@ AMQP transport implementation for the Model Context Protocol (MCP), enabling MCP
 ## Installation
 
 ```bash
-npm install @aws/mcp-amqp-transport
+npm install -g @aws/mcp-amqp-transport
 ```
 
 ## Usage
@@ -122,6 +122,8 @@ mcp-client-amqp-adaptor \
   --exchangeName mcp-exchange \
   --additional-metadata "clientType=web,version=1.0"
 ```
+
+> **Note:** If you didn't install globally with `-g`, then you need to use `npx`.
 
 ### Building Interceptors
 ```bash
