@@ -1,6 +1,6 @@
 {
   "name": "@aws/mcp-amqp-transport",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AMQP transport implementation for Model Context Protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
