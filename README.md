@@ -21,6 +21,24 @@ npm install @aws/mcp-amqp-transport
 
 ### Using Transport Classes
 
+You need to configure the following environment variables:
+```
+AMQP_HOSTNAME - AMQP broker hostname
+AMQP_USERNAME - username for your broker
+AMQP_PASSWORD - password for your broker
+AMQP_PORT - AMQP broker port (default: 5672 for AMQP, 5671 for AMQPS) 
+AMQP_USE_TLS - Use TLS connection (default: true)
+```
+
+Example:
+```bash
+export AMQP_HOSTNAME=localhost
+export AMQP_PORT=5672
+export AMQP_USERNAME=guest
+export AMQP_PASSWORD=guest
+export AMQP_USE_TLS=false
+```
+
 #### Server Transport
 
 ```typescript
@@ -74,8 +92,10 @@ Wraps an existing stdio-based MCP server to communicate over AMQP:
 ```bash
 # Set environment variables
 export AMQP_HOSTNAME=localhost
+export AMQP_PORT=5672
 export AMQP_USERNAME=guest
 export AMQP_PASSWORD=guest
+export AMQP_USE_TLS=false
 
 mcp-server-amqp-adaptor \
   --serverName my-server \
@@ -92,8 +112,10 @@ Provides a stdio interface for MCP clients to connect to AMQP-based servers:
 ```bash
 # Set environment variables
 export AMQP_HOSTNAME=localhost
+export AMQP_PORT=5672
 export AMQP_USERNAME=guest
 export AMQP_PASSWORD=guest
+export AMQP_USE_TLS=false
 
 mcp-client-amqp-adaptor \
   --serverName my-server \
@@ -102,6 +124,14 @@ mcp-client-amqp-adaptor \
 ```
 
 ### Building Interceptors
+```bash
+# Set environment variables
+export AMQP_HOSTNAME=localhost
+export AMQP_PORT=5672
+export AMQP_USERNAME=guest
+export AMQP_PASSWORD=guest
+export AMQP_USE_TLS=false
+```
 
 Create custom message interceptors for monitoring, security, caching, or analytics:
 
@@ -112,13 +142,13 @@ class MonitoringInterceptor extends InterceptorBase {
   async proccessClientToMCPMessage(message: any): Promise<MessageProcessStatus> {
     console.log('Client -> MCP:', message);
     // Add monitoring logic here
-    return MessageProcessStatus.SUCCEEDED_FORWARD;
+    return MessageProcessStatus.FORWARD;
   }
 
   async proccessMCPToClientMessage(message: any): Promise<MessageProcessStatus> {
     console.log('MCP -> Client:', message);
     // Add monitoring logic here
-    return MessageProcessStatus.SUCCEEDED_FORWARD;
+    return MessageProcessStatus.FORWARD;
   }
 }
 
@@ -142,10 +172,10 @@ All transport classes and CLI tools support configuration via:
 ### Environment Variables
 
 - `AMQP_HOSTNAME`: AMQP broker hostname
-- `AMQP_PORT`: AMQP broker port (default: 5672 for AMQP, 5671 for AMQPS)
 - `AMQP_USERNAME`: AMQP username
 - `AMQP_PASSWORD`: AMQP password
-- `AMQP_USE_TLS`: Use TLS connection ("true" or "false")
+- `AMQP_PORT`: AMQP broker port (default: 5672 for AMQP, 5671 for AMQPS)
+- `AMQP_USE_TLS`: Use TLS connection (default: true)
 
 ### CLI Options
 
@@ -221,9 +251,11 @@ interface InterceptorOptions {
 }
 
 enum MessageProcessStatus {
-  SUCCEEDED_FORWARD = 'succeeded_forward',  // Forward message
-  SUCCEEDED_REJECT = 'succeeded_reject',    // Reject message
-  ERROR = 'error'                           // Error occurred
+  FORWARD = 'forward',      // Forward message unchanged
+  REJECT = 'reject',        // Reject message and send it back to the previous exchange
+  ERROR = 'error',          // Error occurred
+  DROP = 'drop',            // Drop message
+  TRANSFORM = 'transform'   // Transform message and forward that instead
 }
 ```
 

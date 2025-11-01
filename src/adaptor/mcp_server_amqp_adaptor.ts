@@ -67,7 +67,7 @@ async function main() {
   }
 
   const hostname = config.hostname || process.env.AMQP_HOSTNAME;
-  const useTLS = config.useTLS ?? process.env.AMQP_USE_TLS === 'true';
+  const useTLS = config.useTLS ?? (process.env.AMQP_USE_TLS !== 'false');
   const port = config.port || parseInt(process.env.AMQP_PORT || '') || (useTLS ? 5671 : 5672);
   const username = config.username || process.env.AMQP_USERNAME;
   const password = config.password || process.env.AMQP_PASSWORD;

@@ -27,7 +27,7 @@ export class ServerAMQPTransport implements Transport {
 
   constructor(options: ServerAMQPTransportOptions) {
     const hostname = options.hostname || process.env.AMQP_HOSTNAME;
-    const useTLS = options.useTLS ?? process.env.AMQP_USE_TLS === 'true';
+    const useTLS = options.useTLS ?? (process.env.AMQP_USE_TLS !== 'false');
     const port = options.port || parseInt(process.env.AMQP_PORT || '') || (useTLS ? 5671 : 5672);
     const username = options.username || process.env.AMQP_USERNAME;
     const password = options.password || process.env.AMQP_PASSWORD;
