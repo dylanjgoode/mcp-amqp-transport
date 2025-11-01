@@ -166,6 +166,31 @@ await interceptor.start();
 
 ## Configuration
 
+The adaptors and SDK require an exchange to be specified on both the client and server. This is the key to decoupling mcp-client and mcp-server communication.
+
+In `mcp-client-amqp-adaptor`, you specify the `serverName`, which is the MCP server you want to connect to, as well as the exchange to publish to and consume from.
+In `mcp-server-amqp-adaptor`, you declare the `serverName` as an identifier for the client and also specify an exchange to publish to and consume from.
+
+If you set the `exchangeName` to be the same in both adaptors, then messages will go directly from client to server. You can monitor and control the flow using the broker engine.
+
+However, you can extend the architecture by adding your own interceptor to process these messages. You can have an application that sits in the middle:
+
+```mermaid
+flowchart LR
+    A[MCP Client] --> B[Client Adaptor]
+    B --> D[Interceptor]
+    D --> E[Server Adaptor]
+    E --> F[MCP Server]
+    
+    F --> E
+    E --> D
+    D --> B
+    B --> A
+```
+
+The client adaptor binds to exchange-A, and the server adaptor binds to exchange-B. The interceptor (you can use the interceptor SDK) will process and route messages between exchange-A and exchange-B.
+
+
 All transport classes and CLI tools support configuration via:
 
 1. **Direct options** (highest priority)
