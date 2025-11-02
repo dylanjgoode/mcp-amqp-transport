@@ -1,6 +1,12 @@
+[![npm](https://img.shields.io/npm/v/@aws/mcp-amqp-transport)](https://www.npmjs.com/package/@aws/mcp-amqp-transport)
+
 # MCP AMQP Transport
 
 AMQP transport implementation for the Model Context Protocol (MCP), enabling MCP servers and clients to communicate over AMQP message brokers like RabbitMQ.
+
+<img width="984" height="450" alt="image" src="https://github.com/user-attachments/assets/2de12861-ba2a-40ae-8e1a-c550e38306ba" />
+
+
 
 ## Features
 
