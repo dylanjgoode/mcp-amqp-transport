@@ -7,6 +7,13 @@ AMQP transport implementation for the Model Context Protocol (MCP), enabling MCP
 <img width="984" height="450" alt="image" src="https://github.com/user-attachments/assets/2de12861-ba2a-40ae-8e1a-c550e38306ba" />
 
 
+## Benefits
+
+- **Reduced Complexity**: Message broker handles guaranteed delivery, automatic retries, error handling, and dead-letter queue (DLQ) management
+- **Fault Tolerance**: Messages are persisted, so if an MCP server fails, requests can be redelivered once the server recovers
+- **Easy Scaling**: Add more MCP server instances by simply binding additional queues to the exchange—the broker automatically load-balances requests
+- **Extensibility**: Tap into message flows for analytics, data lake storage, custom guardrails, security policies, and seamless integration with existing enterprise message bus infrastructure
+
 
 ## Features
 
