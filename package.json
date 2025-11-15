@@ -6,7 +6,9 @@
   "types": "dist/index.d.ts",
   "bin": {
     "mcp-client-amqp-adaptor": "dist/adaptor/mcp_client_amqp_adaptor.js",
-    "mcp-server-amqp-adaptor": "dist/adaptor/mcp_server_amqp_adaptor.js"
+    "mcp-server-amqp-adaptor": "dist/adaptor/mcp_server_amqp_adaptor.js",
+    "mcp-client-amqp10-adaptor": "dist/adaptor/mcp_client_amqp10_adaptor.js",
+    "mcp-server-amqp10-adaptor": "dist/adaptor/mcp_server_amqp10_adaptor.js"
   },
   "scripts": {
     "build": "tsc",
@@ -47,7 +49,8 @@
   },
   "dependencies": {
     "amqplib": "^0.10.9",
-    "commander": "^12.0.0"
+    "commander": "^12.0.0",
+    "rhea": "^3.0.0"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.7",
