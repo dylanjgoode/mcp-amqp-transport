@@ -17,9 +17,9 @@ AMQP transport implementation for the Model Context Protocol (MCP), enabling MCP
 
 ## Features
 
-- **AMQP Transport Layer**: Full implementation of MCP transport over AMQP 0-9-1 protocol
-- **Client & Server Support**: Both `ClientAMQPTransport` and `ServerAMQPTransport` classes
-- **CLI Adaptors**: Command-line tools to bridge stdio-based MCP servers/clients with AMQP
+- **AMQP Transport Layer**: Full implementation of MCP transport over AMQP 0.9.1 and AMQP 1.0 protocols
+- **Client & Server Support**: Both `ClientAMQPTransport` and `ServerAMQPTransport` classes for AMQP 0.9.1, plus `ClientAMQP10Transport` and `ServerAMQP10Transport` for AMQP 1.0
+- **CLI Adaptors**: Command-line tools to bridge stdio-based MCP servers/clients with AMQP (both protocols)
 - **Interceptor Framework**: Base class for building message interceptors
 - **Flexible Configuration**: Support for environment variables and direct configuration
 - **TLS Support**: Secure connections with AMQPS
@@ -52,7 +52,9 @@ export AMQP_PASSWORD=guest
 export AMQP_USE_TLS=false
 ```
 
-#### Server Transport
+#### AMQP 0.9.1 Transport (Default)
+
+##### Server Transport
 
 ```typescript
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -73,7 +75,7 @@ const transport = new ServerAMQPTransport({
 await server.connect(transport);
 ```
 
-#### Client Transport
+##### Client Transport
 
 ```typescript
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -94,11 +96,59 @@ const transport = new ClientAMQPTransport({
 await client.connect(transport);
 ```
 
+#### AMQP 1.0 Transport
+
+> **Note:** AMQP 1.0 support requires RabbitMQ with the AMQP 1.0 plugin enabled: `rabbitmq-plugins enable rabbitmq_amqp1_0`
+
+##### Server Transport
+
+```typescript
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { ServerAMQP10Transport } from '@aws/mcp-amqp-transport';
+
+const server = new Server(
+  { name: 'my-server', version: '1.0.0' },
+  { capabilities: {} }
+);
+
+// Configuration via environment variables
+const transport = new ServerAMQP10Transport({
+  name: 'my-server',
+  exchangeName: 'mcp-exchange'
+  // hostname, port, username, password read from environment variables
+});
+
+await server.connect(transport);
+```
+
+##### Client Transport
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { ClientAMQP10Transport } from '@aws/mcp-amqp-transport';
+
+const client = new Client(
+  { name: 'my-client', version: '1.0.0' },
+  { capabilities: {} }
+);
+
+// Configuration via environment variables
+const transport = new ClientAMQP10Transport({
+  serverName: 'my-server',
+  exchangeName: 'mcp-exchange'
+  // hostname, port, username, password read from environment variables
+});
+
+await client.connect(transport);
+```
+
 ### Using CLI Adaptors
 
-The package includes two CLI tools for bridging stdio-based MCP implementations with AMQP:
+The package includes CLI tools for bridging stdio-based MCP implementations with AMQP. Both AMQP 0.9.1 and AMQP 1.0 adaptors are available.
 
-#### Server Adaptor
+#### AMQP 0.9.1 Adaptors (Default)
+
+##### Server Adaptor
 
 Wraps an existing stdio-based MCP server to communicate over AMQP:
 
@@ -118,7 +168,7 @@ mcp-server-amqp-adaptor \
   --additional-metadata "region=us-east-1,env=prod"
 ```
 
-#### Client Adaptor
+##### Client Adaptor
 
 Provides a stdio interface for MCP clients to connect to AMQP-based servers:
 
@@ -131,6 +181,44 @@ export AMQP_PASSWORD=guest
 export AMQP_USE_TLS=false
 
 mcp-client-amqp-adaptor \
+  --serverName my-server \
+  --exchangeName mcp-exchange \
+  --additional-metadata "clientType=web,version=1.0"
+```
+
+#### AMQP 1.0 Adaptors
+
+> **Note:** Requires RabbitMQ with AMQP 1.0 plugin enabled: `rabbitmq-plugins enable rabbitmq_amqp1_0`
+
+##### Server Adaptor
+
+```bash
+# Set environment variables
+export AMQP_HOSTNAME=localhost
+export AMQP_PORT=5672
+export AMQP_USERNAME=guest
+export AMQP_PASSWORD=guest
+export AMQP_USE_TLS=false
+
+mcp-server-amqp10-adaptor \
+  --serverName my-server \
+  --exchangeName mcp-exchange \
+  --command "npx" \
+  --args "-y" "@modelcontextprotocol/server-everything" \
+  --additional-metadata "region=us-east-1,env=prod"
+```
+
+##### Client Adaptor
+
+```bash
+# Set environment variables
+export AMQP_HOSTNAME=localhost
+export AMQP_PORT=5672
+export AMQP_USERNAME=guest
+export AMQP_PASSWORD=guest
+export AMQP_USE_TLS=false
+
+mcp-client-amqp10-adaptor \
   --serverName my-server \
   --exchangeName mcp-exchange \
   --additional-metadata "clientType=web,version=1.0"
@@ -227,16 +315,31 @@ Both adaptors support the following additional options:
 
 ### Message Flow
 
+#### AMQP 0.9.1
+
 ```
 Client -> [mcp.{serverName}.request] -> Server
 Server -> [from-mcp.{serverName}.client-id.{clientId}] -> Client
 ```
 
-### Routing Keys
-
+**Routing Keys:**
 - **Client to Server**: `mcp.{serverName}.request`
 - **Server to Client**: `from-mcp.{serverName}.client-id.{clientId}`
 - **Reply routing key**: Passed in message headers as `routingKeyToReply`
+
+#### AMQP 1.0
+
+```
+Client -> [exchange.{exchangeName}.mcp.{serverName}.request] -> Server
+Server -> [exchange.{exchangeName}.{replyRoutingKey}] -> Client
+```
+
+**Address Patterns:**
+- **Client sender address**: `exchange.{exchangeName}.mcp.{serverName}.request`
+- **Client receiver address**: `exchange.{exchangeName}.{replyRoutingKey}`
+- **Server receiver address**: `exchange.{exchangeName}.mcp.{name}.request`
+- **Server sender address**: `exchange.{exchangeName}.{routingKeyToReply}` (per-message sender)
+- **Reply routing key**: Passed in message application properties as `routingKeyToReply` (without exchange prefix)
 
 ### Message ID Handling
 
@@ -249,7 +352,9 @@ The transport automatically augments message IDs with client identifiers to supp
 
 ## API Reference
 
-### ServerAMQPTransport
+### AMQP 0.9.1 Transports
+
+#### ServerAMQPTransport
 
 ```typescript
 interface ServerAMQPTransportOptions {
@@ -263,10 +368,40 @@ interface ServerAMQPTransportOptions {
 }
 ```
 
-### ClientAMQPTransport
+#### ClientAMQPTransport
 
 ```typescript
 interface ClientAMQPTransportOptions {
+  serverName: string;       // Target server name
+  exchangeName: string;     // AMQP exchange name
+  hostname?: string;        // Broker hostname
+  port?: number;           // Broker port
+  username?: string;       // AMQP username
+  password?: string;       // AMQP password
+  useTLS?: boolean;        // Use TLS connection
+}
+```
+
+### AMQP 1.0 Transports
+
+#### ServerAMQP10Transport
+
+```typescript
+interface ServerAMQP10TransportOptions {
+  name: string;              // Server name
+  exchangeName: string;      // AMQP exchange name
+  hostname?: string;         // Broker hostname
+  port?: number;            // Broker port
+  username?: string;        // AMQP username
+  password?: string;        // AMQP password
+  useTLS?: boolean;         // Use TLS connection
+}
+```
+
+#### ClientAMQP10Transport
+
+```typescript
+interface ClientAMQP10TransportOptions {
   serverName: string;       // Target server name
   exchangeName: string;     // AMQP exchange name
   hostname?: string;        // Broker hostname
