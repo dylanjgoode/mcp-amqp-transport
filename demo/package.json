@@ -1,0 +1,13 @@
+{
+  "name": "mcp-amqp-demo",
+  "version": "1.0.0",
+  "description": "Demo showing MCP with AMQP transport",
+  "type": "module",
+  "scripts": {
+    "server": "node server.js",
+    "client": "node client.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  }
+}
